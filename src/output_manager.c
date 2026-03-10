@@ -95,11 +95,16 @@ heater_mask_t output_read_bitmask(void) {
 // Публичные функции
 // ============================================================================
 
-void output_manager_init(void) {
-        memset(&output_ctx, 0, sizeof(output_ctx));
-        output_ctx.last_confirmed = HEATER_STATE_0;
-        force_all_outputs_off();
-        output_ctx.last_switch_time = 0;
+void output_manager_init(void)
+{
+    memset(&output_ctx, 0, sizeof(output_ctx));
+
+    output_ctx.commanded_state = HEATER_STATE_0;
+    output_ctx.last_confirmed = HEATER_STATE_0;
+
+    force_all_outputs_off();
+
+    output_ctx.last_switch_time = 0;
 }
 
 void apply_output_state(heater_mask_t target_level)
@@ -116,6 +121,9 @@ void apply_output_state(heater_mask_t target_level)
      * Пререключение при target_level == HEATER_STATE_0
      * не блокируется.
     */
+
+    /* сохраняем команду */
+    output_ctx.commanded_state = target_level;
 
     /* Если состояние не изменилось — ничего не делаем */
     if (target_level == output_ctx.last_confirmed)
