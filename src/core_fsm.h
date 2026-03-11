@@ -50,6 +50,16 @@ typedef struct {
 
 } core_context_t;
 
+typedef enum
+{
+    SYSTEM_INIT = 0,
+    SYSTEM_WAIT_FIRST_WINDOW,
+    SYSTEM_NORMAL,
+    SYSTEM_ERROR_WAIT,
+    SYSTEM_FATAL_LOCK
+
+} system_state_t;
+
 // ============================================================================
 // Публичные функции
 // ============================================================================

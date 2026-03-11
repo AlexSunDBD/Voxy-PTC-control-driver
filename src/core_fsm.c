@@ -51,7 +51,9 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     const output_state_t* out_state = output_get_state();
     heater_mask_t actual_now = output_read_bitmask();
 
-    if (actual_now != out_state->last_confirmed)
+    if (actual_now != out_state->commanded_state)
+    // 'output_state_t {aka const struct <anonymous>}' has no member named 'commanded_state'
+    // структура "<без имени>" не содержит поля "commanded_state"
     {
         error_handler_process(ERR_INTEGRITY, 0);
         return result;

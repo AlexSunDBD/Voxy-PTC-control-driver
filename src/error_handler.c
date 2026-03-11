@@ -122,9 +122,7 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
        
         if (error_ctx.error_count_in_window >= MAX_ERRORS_IN_WINDOW)
         {
-            __disable_irq(); //Для перехода в FATAL critical обязателен.
                 enter_fatal_state(error_type, error_data);
-            __enable_irq();
             exit_critical();
 
             result.system_locked = true;
@@ -142,9 +140,7 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
     // Немедленный FATAL для ERR_SAFETY_SIGNAL_FAIL
     if (error_type == ERR_SAFETY_SIGNAL_FAIL)
     {
-        __disable_irq(); //Для перехода в FATAL critical обязателен.
             enter_fatal_state(error_type, error_data);
-        __enable_irq();
         exit_critical();
 
         result.system_locked = true;
@@ -217,9 +213,9 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
             return handle_normal_error(error_type, error_data);
             
         case ERR_FATAL:
-            __disable_irq(); //Для перехода в FATAL critical обязателен.
+            enter_critical();
                 enter_fatal_state(error_type, error_data);
-            __enable_irq();
+            exit_critical();
 
             result.system_locked = true;
             result.error_handled = true;

@@ -49,7 +49,14 @@ static void system_initialize(void) {
     hardware_init();
     
     // 3. Небольшая задержка для стабилизации UART
-    HAL_Delay(50);
+    static uint32_t last_time = 0;
+
+    if(time_ms() - last_time >= 50)
+    {
+        last_time = time_ms();
+
+        do_something();
+    }
     
     // 4. Инициализация модулей в правильном порядке
     bluetooth_init();           // UART уже готов
@@ -75,7 +82,14 @@ static void system_initialize(void) {
     system_state.init_phase = true;
     
     // Отправляем READY сообщение
-    HAL_Delay(10);  // Небольшая пауза перед финальным READY
+    static uint32_t last_time = 0;
+
+    if(time_ms() - last_time >= 10)
+    {
+        last_time = time_ms();
+
+        do_something();
+    }  // Небольшая пауза перед финальным READY
     send_line("\r\nREADY\r\n");
 }
 

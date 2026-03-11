@@ -115,7 +115,7 @@ uint32_t calculate_median(uint32_t* values, uint8_t count) {
         // Нечётное количество элементов
         return values[count / 2];
     } else {
-        // Чётное количество элементов - беррм меньшее
+        // Чётное количество элементов - берём меньшее
         return values[count / 2 - 1];
     }
 }

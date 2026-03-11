@@ -95,6 +95,13 @@ void bsp_gpio_init(void) {
     
     // Для отладки: кратковременно включаем LED при инициализации
     LED_ON;
-    HAL_Delay(50);
+    static uint32_t last_time = 0;
+
+    if(time_ms() - last_time >= 50)
+    {
+        last_time = time_ms();
+
+        do_something();
+    };
     LED_OFF;
 }
