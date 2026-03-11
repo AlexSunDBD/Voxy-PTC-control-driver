@@ -29,10 +29,10 @@
 
 typedef struct {
     bool init_phase;
-} system_global_state_t;
+} main_system_state_t;
 
-static system_global_state_t system_state;
-// conflicting types for 'system_state'
+static main_system_state_t main_state;
+// 'main_state' defined but not used [-Wunused-variable]
 
 // ============================================================================
 // Вспомогательные функции
@@ -44,7 +44,7 @@ static system_global_state_t system_state;
 
 static void system_initialize(void) {
     // 1. Очищаем состояние системы
-    memset(&system_state, 0, sizeof(system_state));
+    memset(&main_state, 0, sizeof(main_state));
     
     // 2. Инициализация железа (включает UART)
     hardware_init();
@@ -73,7 +73,7 @@ static void system_initialize(void) {
     led_fsm_init();
     
     // Устанавливаем начальное состояние
-    system_state.init_phase = true;
+    main_state.init_phase = true;
     
     // Небольшая пауза перед финальным READY
     HAL_Delay(10);
@@ -154,7 +154,7 @@ static void system_main_tasks(void) {
         pwm_input_reset();
         core_reset_state();
         
-        system_state.init_phase = true;
+        main_state.init_phase = true;
     }
 
     return;
@@ -173,7 +173,7 @@ int main(void) {
     //====================================== WHILE(1) ================================================
     while (1)
     {
-        if (system_state.init_phase)
+        if (main_state.init_phase)
         {
             measurement_window_t window;
 
@@ -183,7 +183,7 @@ int main(void) {
 
                 if (result.success)
                 {
-                    system_state.init_phase = false;
+                    main_state.init_phase = false;
                 }
             }
 
