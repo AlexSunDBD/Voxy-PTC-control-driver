@@ -60,7 +60,7 @@ typedef enum
 
 } system_state_t;
 
-static system_state_t system_state = SYSTEM_INIT;
+extern system_state_t system_state;
 
 // ============================================================================
 // Публичные функции
