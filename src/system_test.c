@@ -222,9 +222,9 @@ bool test_pwm_input_measurement(void) {
 }
 
 bool test_validation_logic(void) {
-    // Проверяем логику валидации
-    // Тестовые случаи с разными значениями period и pulse_width
-    return true;
+    // TODO: заменить заглушку на проверки validate_window/calculate_median
+    // (ZERO-окно, недостаток валидных, медиана для odd/even)
+    return false;
 }
 
 bool test_heater_logic(void) {

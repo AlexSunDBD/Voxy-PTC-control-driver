@@ -36,3 +36,6 @@ pio run -t upload
 
 # Мониторинг через UART
 pio device monitor
+```
+
+
