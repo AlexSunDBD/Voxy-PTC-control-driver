@@ -189,7 +189,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM3)
   {
-    system_tick_ms++;      // ЕДИНСТВЕННАЯ временная база
+    system_tick_ms++;      // Временная база time_ms() для логики проекта
 
     static uint16_t ms_counter = 0;
   

@@ -101,11 +101,7 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     if (final_state < 0) final_state = 0;
     if (final_state > 3) final_state = 3;
 
-    bluetooth_send_auto_message(
-        //implicit declaration of function 'bluetooth_send_auto_message' [-Wimplicit-function-declaration]
-            heater.target_level,
-            limit,
-            final_state);
+    bluetooth_send_auto_message(heater.target_level, limit, final_state);
             
 
     /* 6. Преобразование в битовую маску */
@@ -161,7 +157,7 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // ====================================================
     result.success = true;
     safety_timeout_update_activity();
-    // implicit declaration of function 'safety_timeout_update_activity'; did you mean 'safety_timeout_update'? [-Wimplicit-function-declaration]
+    
     core_ctx.success_count++;
 
     result.actual_state = actual_now;

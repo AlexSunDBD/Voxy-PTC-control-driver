@@ -32,7 +32,6 @@ typedef struct {
 } main_system_state_t;
 
 static main_system_state_t main_state;
-// 'main_state' defined but not used [-Wunused-variable]
 
 // ============================================================================
 // Вспомогательные функции
