@@ -18,19 +18,16 @@
 
 static core_context_t core_ctx;
 static uint8_t zero_confirm_counter = 0;
-static system_state_t system_state = SYSTEM_INIT;
 
 // ============================================================================
 // Публичные функции
 // ============================================================================
 
 void core_fsm_init(void) {
-    memset(&core_ctx, 0, sizeof(core_ctx));
-    
-    core_ctx.target_level = 0;
-    
-    core_ctx.last_processing_time = time_ms();
 
+    memset(&core_ctx, 0, sizeof(core_ctx));
+    core_ctx.target_level = 0;
+    core_ctx.last_processing_time = time_ms();
     voltage_monitoring_reset_limit();
 }
 
@@ -99,9 +96,6 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     int8_t final_state = (int8_t)heater.target_level - (int8_t)limit;
     if (final_state < 0) final_state = 0;
     if (final_state > 3) final_state = 3;
-
-    bluetooth_send_auto_message(heater.target_level, limit, final_state);
-            
 
     /* 6. Преобразование в битовую маску */
     heater_mask_t target_bitmask = state_to_bitmask((heater_level_t)final_state);

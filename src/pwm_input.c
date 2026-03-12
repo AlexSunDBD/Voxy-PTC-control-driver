@@ -187,6 +187,7 @@ void pwm_close_measurement_window(void)
     {
         pwm_ctx.window_collecting_flag = false;
         pwm_ctx.window_ready_flag = true;
+        
     }
 
     exit_critical();

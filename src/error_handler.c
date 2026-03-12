@@ -30,8 +30,6 @@ static inline void exit_critical(void) {
 static void add_error_to_history(error_type_t type, uint32_t data, bool is_fatal) {
     error_record_t record = {
         .type = type,
-        .timestamp_ms = time_ms(),
-        //'error_record_t {aka struct <anonymous>}' has no member named 'timestamp_ms'
         .data = data,
         .is_fatal = is_fatal
     };
