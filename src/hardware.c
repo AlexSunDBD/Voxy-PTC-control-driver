@@ -45,14 +45,16 @@ void iwdg_refresh(void) {
     HAL_IWDG_Refresh(&hiwdg);
 }
 
-static inline void enter_critical(void) {
+uint32_t critical_enter(void) {
+    uint32_t primask = __get_PRIMASK();
     __disable_irq();
-    error_lock = 1;
+    return primask;
 }
 
-static inline void exit_critical(void) {
-    __enable_irq();
-    error_lock = 0;
+void critical_exit(uint32_t state) {
+    if ((state & 0x1u) == 0u) {
+        __enable_irq();
+    }
 }
 
 // ============================================================================

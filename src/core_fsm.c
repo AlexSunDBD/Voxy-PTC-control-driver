@@ -150,8 +150,6 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // 9. Завершение цикла
     // ====================================================
     result.success = true;
-    safety_timeout_update_activity();
-
     core_ctx.success_count++;
 
     result.actual_state = actual_now;

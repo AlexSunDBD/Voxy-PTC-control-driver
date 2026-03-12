@@ -92,14 +92,12 @@ bool safety_timeout_check(void) {
 
     if (!safety_ctx.active || safety_ctx.timeout_triggered) {
         // Таймер не активен или уже сработал
-        exit_critical();
         return false;
     }
 
     // Проверяем, истекло ли время
     if (!safety_timeout_expired()) {
         // Время ещё не истекло
-        exit_critical();
         return false;
     }
     
@@ -107,7 +105,6 @@ bool safety_timeout_check(void) {
     // Выходы отключены - безопасно
     {
         safety_ctx.active = false;
-        exit_critical();
         return false;
     }
 

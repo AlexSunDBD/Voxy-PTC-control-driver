@@ -185,14 +185,12 @@ int main(void) {
                     }
                 }
                 iwdg_refresh();
-                break;
+                 break;
 
             case SYSTEM_WAIT_FIRST_WINDOW:
             case SYSTEM_NORMAL:
                 {
                     system_main_tasks();
-
-                    measurement_window_t window;
 
                     if (pwm_try_get_window(&window))
                     {
