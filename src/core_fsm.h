@@ -60,7 +60,7 @@ typedef enum
 
 } system_state_t;
 
-extern system_state_t system_state;
+// extern system_state_t system_state;   *Ты предложил это удалить?? Я не понял...
 
 // ============================================================================
 // Публичные функции

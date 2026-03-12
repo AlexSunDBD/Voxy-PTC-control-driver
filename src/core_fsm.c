@@ -20,7 +20,6 @@ static core_context_t core_ctx;
 static uint8_t zero_confirm_counter = 0;
 static system_state_t system_state = SYSTEM_INIT;
 
-
 // ============================================================================
 // Публичные функции
 // ============================================================================
@@ -157,7 +156,7 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // ====================================================
     result.success = true;
     safety_timeout_update_activity();
-    
+
     core_ctx.success_count++;
 
     result.actual_state = actual_now;

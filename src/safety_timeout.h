@@ -43,6 +43,8 @@ typedef struct {
 
 bool safety_outputs_are_physically_off(void);
 
+void safety_timeout_update_activity(void);
+
 /**
  * @brief Инициализация модуля безопасности
  */
