@@ -32,6 +32,7 @@ typedef struct {
 } main_system_state_t;
 
 static main_system_state_t main_state;
+static system_state_t run_state = SYSTEM_INIT;
 
 // ============================================================================
 // Вспомогательные функции
@@ -40,6 +41,16 @@ static main_system_state_t main_state;
 // ============================================================================
 // Функции инициализации
 // ============================================================================
+
+static void MX_IWDG_Init(void) {
+    extern IWDG_HandleTypeDef hiwdg;
+    hiwdg.Instance = IWDG;
+    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
+    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;  // 750 мс таймаут
+    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
+        Error_Handler();
+    }
+}
 
 static void system_initialize(void) {
     // 1. Очищаем состояние системы
@@ -81,16 +92,6 @@ static void system_initialize(void) {
     send_line("\r\nREADY\r\n");
 
     MX_IWDG_Init();
-}
-
-static void MX_IWDG_Init(void) {
-    extern IWDG_HandleTypeDef hiwdg;
-    hiwdg.Instance = IWDG;
-    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
-    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;  // 750 мс таймаут
-    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
-        Error_Handler();
-    }
 }
 
 // ============================================================================
@@ -172,6 +173,8 @@ int main(void) {
     //====================================== WHILE(1) ================================================
     while (1)
     {
+        measurement_window_t window;
+
         switch (run_state)
         {
             case SYSTEM_INIT:
@@ -208,13 +211,18 @@ int main(void) {
                 /* обработка соответствующих состояний */
                 iwdg_refresh();
                 break;
+
             case SYSTEM_FATAL_LOCK:
                 /* обработка соответствующих состояний */
                 iwdg_refresh();
                 break;
+
+            default:
+                /* watchdog не кормим */
+                break;
         }
 
-        system_background_tasks();
+        system_background_tasks(); // Блютуз, LED индикация и т.п.
 
     }
     

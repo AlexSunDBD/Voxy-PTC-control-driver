@@ -157,7 +157,6 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     result.actual_state = actual_now;
 
     result.target_level = final_state;
-    // а нужен ли этот "snapshot наружу"? Может есть смысл оптимизировать структуру и обойтись одной переменной?
 
     uint32_t dt = time_ms() - t0;
     core_ctx.last_cycle_time_ms = dt;

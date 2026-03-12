@@ -15,16 +15,6 @@ static __IO uint32_t safety_lock = 0;
 // Вспомогательные функции
 // ============================================================================
 
-static inline void enter_critical(void) {
-    safety_lock = 1;
-    __disable_irq();
-}
-
-static inline void exit_critical(void) {
-    __enable_irq();
-    safety_lock = 0;
-}
-
 static void set_safety_signal_physical(bool state) {
     if (state) {
         SAFETY_SIGNAL_ON;    // PB15 = 1
@@ -44,8 +34,6 @@ static bool read_safety_signal_physical(void) {
 // ============================================================================
 
 void safety_signal_init(void) {
-    enter_critical();
-    
     memset(&safety_ctx, 0, sizeof(safety_ctx));
     
     // Начальное состояние согласно ТЗ: PB15 = 0
@@ -57,8 +45,6 @@ void safety_signal_init(void) {
     
     // Устанавливаем физическое состояние
     set_safety_signal_physical(false);
-    
-    exit_critical();
 }
 
 
@@ -70,8 +56,6 @@ safety_signal_result_t safety_signal_set(void)
         .error = SAFETY_SIGNAL_ERROR_NONE,
         .timestamp_ms = time_ms()
     };
-
-    enter_critical();
 
     bool current_state = read_safety_signal_physical();
 
@@ -90,8 +74,6 @@ safety_signal_result_t safety_signal_set(void)
 
     result.success = true;
 
-    exit_critical();
-
     return result;
 }
 
@@ -103,8 +85,6 @@ safety_signal_result_t safety_signal_clear(void)
         .error = SAFETY_SIGNAL_ERROR_NONE,
         .timestamp_ms = time_ms()
     };
-
-    enter_critical();
 
     bool current_state = read_safety_signal_physical();
 
@@ -124,8 +104,6 @@ safety_signal_result_t safety_signal_clear(void)
 
     result.success = true;
 
-    exit_critical();
-
     return result;
 }
 
@@ -133,9 +111,7 @@ safety_signal_error_t safety_signal_process(void)
 {
     uint32_t now = time_ms();
     bool physical = read_safety_signal_physical();
-    enter_critical();
-        safety_ctx.actual_state = physical;
-    exit_critical();
+    safety_ctx.actual_state = physical;
     
     // Проверяем ТОЛЬКО если НОРМА снята
     if (safety_ctx.target_state == false)
@@ -145,15 +121,11 @@ safety_signal_error_t safety_signal_process(void)
         {
             if (now - safety_ctx.clear_time_ms >= OUT_STABILIZATION_MS)
             {
-                enter_critical();
-                    safety_ctx.check_count++;
-                exit_critical();
+                safety_ctx.check_count++;
 
                 if (physical != false)
                 {
-                    enter_critical();
-                        safety_ctx.error_count++;
-                    exit_critical();
+                    safety_ctx.error_count++;
                     return SAFETY_SIGNAL_ERROR_LEVEL;
                 }
 
@@ -184,9 +156,7 @@ safety_signal_error_t safety_signal_process(void)
 }
 
 bool safety_signal_read_state(void) {
-    enter_critical();
-        bool state = safety_ctx.last_confirmed;
-    exit_critical();
+    bool state = safety_ctx.last_confirmed;
     return state;
 }
 
@@ -199,8 +169,6 @@ const safety_signal_state_t* safety_signal_get_state(void) {
 }
 
 void safety_signal_reset(void) {
-    enter_critical();
-    
     // Сбрасываем состояние
     safety_ctx.target_state = false;
     safety_ctx.actual_state = false;
@@ -209,8 +177,6 @@ void safety_signal_reset(void) {
     
     // Устанавливаем физическое состояние
     set_safety_signal_physical(false);
-    
-    exit_critical();
 }
 
 

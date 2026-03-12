@@ -45,6 +45,16 @@ void iwdg_refresh(void) {
     HAL_IWDG_Refresh(&hiwdg);
 }
 
+static inline void enter_critical(void) {
+    __disable_irq();
+    error_lock = 1;
+}
+
+static inline void exit_critical(void) {
+    __enable_irq();
+    error_lock = 0;
+}
+
 // ============================================================================
 // Функции управления GPIO
 // ============================================================================

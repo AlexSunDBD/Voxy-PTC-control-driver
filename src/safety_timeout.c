@@ -17,22 +17,6 @@ static __IO uint32_t safety_lock = 0;
 // ============================================================================
 
 /**
- * @brief Вход в критическую секцию
- */
-static inline void enter_critical(void) {
-    safety_lock = 1;
-    __disable_irq();
-}
-
-/**
- * @brief Выход из критической секции
- */
-static inline void exit_critical(void) {
-    __enable_irq();
-    safety_lock = 0;
-}
-
-/**
  * @brief Проверить, отключены ли все выходы (новые пины)
  */
 static bool is_physical_off(GPIO_TypeDef* port, uint16_t pin)
@@ -68,20 +52,15 @@ static bool safety_timeout_expired(void)
 // ============================================================================
 
 void safety_timeout_init(void) {
-    enter_critical();
-    
     memset(&safety_ctx, 0, sizeof(safety_ctx));
     
     safety_ctx.active = false;
     safety_ctx.timeout_triggered = false;
     safety_ctx.timeout_count = 0;
     
-    exit_critical();
 }
 
 bool safety_timeout_update(heater_level_t target_level) {
-    enter_critical();
-    
     // Проверяем целевое состояние
     bool target_is_zero = (target_level == HEATER_STATE_0);
     
@@ -99,8 +78,6 @@ bool safety_timeout_update(heater_level_t target_level) {
        Таймер НЕ сбрасывается принудительно. */
 
     bool timer_active = safety_ctx.active;
-    exit_critical();
-    
     return timer_active;
 }
 
@@ -113,8 +90,6 @@ bool safety_timeout_check(void) {
     * Повторные нули таймер не перезапускают.
     */
 
-    enter_critical();
-    
     if (!safety_ctx.active || safety_ctx.timeout_triggered) {
         // Таймер не активен или уже сработал
         exit_critical();
@@ -139,13 +114,10 @@ bool safety_timeout_check(void) {
     safety_ctx.timeout_triggered = true;
     safety_ctx.timeout_count++;
 
-    exit_critical();
     return true;
 }
 
 void safety_timeout_reset(void) {
-    enter_critical();
-    
     // Проверяем, что все выходы действительно отключены
     bool outputs_off = safety_outputs_are_physically_off();
     
@@ -156,7 +128,6 @@ void safety_timeout_reset(void) {
     }
     // Если выходы не отключены - не сбрасываем таймер
     
-    exit_critical();
 }
 
 const safety_timer_state_t* safety_get_state(void) {
@@ -172,8 +143,6 @@ safety_check_result_t safety_get_check_result(void) {
         .remaining_ms = 0,
         .timestamp_ms = time_ms()
     };
-    
-    enter_critical();
     
     result.timer_active = safety_ctx.active;
     result.timeout_detected = safety_ctx.timeout_triggered;
@@ -198,8 +167,6 @@ safety_check_result_t safety_get_check_result(void) {
             result.safety_ok = true;
         }
     }
-    
-    exit_critical();
     
     return result;
 }
