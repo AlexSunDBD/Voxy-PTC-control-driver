@@ -48,6 +48,9 @@ typedef struct {
     uint32_t success_count;          // Счётчик успешных циклов
     uint32_t error_count;            // Счётчик ошибок
 
+    uint32_t last_cycle_time_ms;
+    uint32_t max_cycle_time_ms;
+
 } core_context_t;
 
 typedef enum

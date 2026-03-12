@@ -32,6 +32,7 @@ void core_fsm_init(void) {
 }
 
 processing_result_t core_process_cycle(const measurement_window_t* window) {
+    uint32_t t0 = time_ms();
     processing_result_t result = {
         .success = false,
     };
@@ -157,6 +158,12 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
 
     result.target_level = final_state;
     // а нужен ли этот "snapshot наружу"? Может есть смысл оптимизировать структуру и обойтись одной переменной?
+
+    uint32_t dt = time_ms() - t0;
+    core_ctx.last_cycle_time_ms = dt;
+    if (dt > core_ctx.max_cycle_time_ms) {
+        core_ctx.max_cycle_time_ms = dt;
+    }
 
     return result;
 }
