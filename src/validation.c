@@ -60,7 +60,6 @@ validation_result_t validate_window(const measurement_window_t* window)
         .median_pulse_width = 0,
         .valid_samples_count = 0,
         .total_samples_count = window->count,
-        .timestamp_ms = window->timestamp_ms
     };
 
     // ====================================================

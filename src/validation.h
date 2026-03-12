@@ -35,7 +35,6 @@ typedef struct {
     uint32_t median_pulse_width;    // Медианное значение pulse_width
     uint8_t valid_samples_count;    // Количество валидных измерений
     uint8_t total_samples_count;    // Общее количество измерений
-    uint32_t timestamp_ms;          // Время закрытия окна
 } validation_result_t;
 
 /**

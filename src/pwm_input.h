@@ -43,7 +43,6 @@ typedef struct {
 typedef struct {
     pwm_measurement_t samples[PWM_BUFFER_SIZE];     // Буфер измерений
     uint8_t count;                                  // Количество измерений в окне
-    uint32_t timestamp_ms;                          // Время закрытия окна
 } measurement_window_t;
 
 /**

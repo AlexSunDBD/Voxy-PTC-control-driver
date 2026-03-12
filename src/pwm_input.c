@@ -185,7 +185,6 @@ void pwm_close_measurement_window(void)
 
     if (pwm_ctx.window_collecting_flag)
     {
-        pwm_ctx.measurement_window.timestamp_ms = time_ms();
         pwm_ctx.window_collecting_flag = false;
         pwm_ctx.window_ready_flag = true;
     }
