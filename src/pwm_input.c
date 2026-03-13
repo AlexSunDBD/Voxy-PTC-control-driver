@@ -51,7 +51,7 @@ static void reset_capture_state(void) {
 
 void pwm_open_measurement_window(void)
 {
-    critical_enter();
+    uint32_t state = critical_enter();
 
     pwm_ctx.measurement_window.count = 0;
     reset_capture_state();
@@ -59,7 +59,7 @@ void pwm_open_measurement_window(void)
     pwm_ctx.window_collecting_flag = true;
     pwm_ctx.window_ready_flag = false;
 
-    critical_exit();
+    critical_exit(state);
 }
 
 
@@ -144,24 +144,24 @@ void pwm_input_init(void) {
 }
 
 void pwm_input_stop(void) {
-    critical_enter();
+    uint32_t state = critical_enter();
     
     HAL_TIM_IC_Stop_IT(&htim2, TIM_CHANNEL_1);
     HAL_TIM_IC_Stop_IT(&htim2, TIM_CHANNEL_2);
     
     pwm_ctx.module_state = PWM_STATE_IDLE;
     
-    critical_exit();
+    critical_exit(state);
 }
 
 void pwm_input_resume(void) {
-    critical_enter();
+    uint32_t state = critical_enter();
     
     pwm_ctx.module_state = PWM_STATE_MEASURING;
     HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
     HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);
     
-    critical_exit();
+    critical_exit(state);
 }
 
 bool pwm_window_is_open(void)
@@ -171,7 +171,7 @@ bool pwm_window_is_open(void)
 
 void pwm_close_measurement_window(void)
 {
-    critical_enter();
+    uint32_t state = critical_enter();
 
     if (pwm_ctx.window_collecting_flag)
     {
@@ -179,13 +179,14 @@ void pwm_close_measurement_window(void)
         pwm_ctx.window_ready_flag = true;
     }
 
-    critical_exit}
+    critical_exit(state);
+}
 
 bool pwm_try_get_window(measurement_window_t* out_window)
 {
     bool ready = false;
 
-    critical_enter();
+    uint32_t state = critical_enter();
 
     if (pwm_ctx.window_ready_flag)
     {
@@ -194,13 +195,13 @@ bool pwm_try_get_window(measurement_window_t* out_window)
         ready = true;
     }
 
-    critical_exit();
+    critical_exit(state);
 
     return ready;
 }
 
 void pwm_input_reset(void) {
-    critical_enter();
+    uint32_t state = critical_enter();
     
     memset(&pwm_ctx.measurement_window, 0, sizeof(measurement_window_t));
     
@@ -209,14 +210,14 @@ void pwm_input_reset(void) {
     pwm_ctx.window_ready_flag = false;
     pwm_ctx.window_collecting_flag = false;
     
-    critical_exit();
+    critical_exit(state);
 }
 
 uint8_t pwm_get_current_count(void) {
     uint8_t count;
-    critical_enter();
+    uint32_t state = critical_enter();
     count = pwm_ctx.measurement_window.count;
-    critical_exit();
+    critical_exit(state);
     return count;
 }
 

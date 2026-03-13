@@ -58,6 +58,14 @@ static void set_output_bitmask(heater_mask_t bitmask) {
     gpio_write(gpio3_level, PORT_HEATER_3, PIN_HEATER_3);
 }
 
+static bool physical_to_logical(bool state) {
+    #if HEATER_OUTPUT_INVERTED_LOGIC
+        return !state;
+    #else
+        return state;
+    #endif
+}
+
 /**
  * @brief Прочитать текущую битовую маску с выходов
  */
