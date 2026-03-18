@@ -37,16 +37,6 @@ static system_state_t run_state = SYSTEM_INIT;
 // Функции инициализации
 // ============================================================================
 
-static void MX_IWDG_Init(void) {
-    extern IWDG_HandleTypeDef hiwdg;
-    hiwdg.Instance = IWDG;
-    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
-    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;  // 750 мс таймаут
-    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
-        Error_Handler();
-    }
-}
-
 static void system_initialize(void) {
     // 2. Инициализация железа (включает UART)
     hardware_init();
@@ -80,7 +70,7 @@ static void system_initialize(void) {
     // Отправляем READY сообщение
     send_line("\r\nREADY\r\n");
 
-    MX_IWDG_Init();
+    hardware_iwdg_init();
 }
 
 // ============================================================================

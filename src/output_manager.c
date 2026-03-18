@@ -3,7 +3,6 @@
 #include "output_manager.h"
 #include "hardware.h"
 #include "safety_signal.h"  
-#include "bsp/bsp_timer.h"
 
 // ============================================================================
 // Внутренние переменные

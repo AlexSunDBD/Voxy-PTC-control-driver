@@ -97,6 +97,7 @@ void critical_exit(uint32_t state);
 // ============================================================================
 
 void hardware_init(void);
+void hardware_iwdg_init(void);
 void SystemClock_Config(void);
 void iwdg_refresh(void);
 

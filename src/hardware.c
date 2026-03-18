@@ -45,6 +45,16 @@ void iwdg_refresh(void) {
     HAL_IWDG_Refresh(&hiwdg);
 }
 
+void hardware_iwdg_init(void) {
+    hiwdg.Instance = IWDG;
+    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
+    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;
+
+    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
 uint32_t critical_enter(void) {
     uint32_t primask = __get_PRIMASK();
     __disable_irq();
@@ -363,7 +373,6 @@ void hardware_init(void) {
     HAL_NVIC_EnableIRQ(TIM3_IRQn);
 
     MX_USART2_UART_Init();
-    // MX_IWDG_Init(); преждевременный запуск IWDG перенесен в основной цикл
      
     // Запуск таймеров
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
