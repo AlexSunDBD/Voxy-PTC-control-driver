@@ -3,7 +3,6 @@
 #include "output_manager.h"
 #include "hardware.h"
 #include "safety_signal.h"  
-#include "bsp/bsp_timer.h"
 
 // ============================================================================
 // Внутренние переменные
@@ -58,6 +57,14 @@ static void set_output_bitmask(heater_mask_t bitmask) {
     gpio_write(gpio3_level, PORT_HEATER_3, PIN_HEATER_3);
 }
 
+static bool physical_to_logical(bool state) {
+    #if HEATER_OUTPUT_INVERTED_LOGIC
+        return !state;
+    #else
+        return state;
+    #endif
+}
+
 /**
  * @brief Прочитать текущую битовую маску с выходов
  */
@@ -95,11 +102,16 @@ heater_mask_t output_read_bitmask(void) {
 // Публичные функции
 // ============================================================================
 
-void output_manager_init(void) {
-        memset(&output_ctx, 0, sizeof(output_ctx));
-        output_ctx.last_confirmed = HEATER_STATE_0;
-        force_all_outputs_off();
-        output_ctx.last_switch_time = 0;
+void output_manager_init(void)
+{
+    memset(&output_ctx, 0, sizeof(output_ctx));
+
+    output_ctx.commanded_state = HEATER_STATE_0;
+    output_ctx.last_confirmed = HEATER_STATE_0;
+
+    force_all_outputs_off();
+
+    output_ctx.last_switch_time = 0;
 }
 
 void apply_output_state(heater_mask_t target_level)
@@ -116,6 +128,9 @@ void apply_output_state(heater_mask_t target_level)
      * Пререключение при target_level == HEATER_STATE_0
      * не блокируется.
     */
+
+    /* сохраняем команду */
+    output_ctx.commanded_state = target_level;
 
     /* Если состояние не изменилось — ничего не делаем */
     if (target_level == output_ctx.last_confirmed)
@@ -158,11 +173,12 @@ bool are_all_outputs_off(void)
 }
 
 bool emergency_shutdown(void) {
-        force_all_outputs_off();
-    
+    force_all_outputs_off();
+
+    /* блокирующая задержка здесь требует отдельного подтверждения по ТЗ */
     delay_ms(OUT_STABILIZATION_MS);
     heater_mask_t actual = output_read_bitmask();
-    
+
     return (actual == HEATER_STATE_0);
 }
 

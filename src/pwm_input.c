@@ -26,32 +26,18 @@ static struct {
     uint32_t last_rising_edge;            // Время последнего RISING фронта
     
     // Тайминги
-    uint32_t window_start_time;           // Время начала активного окна
     volatile bool window_collecting_flag; // Флаг открытого окна
     pwm_state_t module_state;             // Общее состояние модуля
     
     // Статистика
     uint32_t total_measurements;
-    uint32_t valid_measurements;
     uint32_t missed_rising_count;
     
-    // Критическая секция
-    __IO uint32_t lock;
 } pwm_ctx;
 
 // ============================================================================
 // Вспомогательные функции
 // ============================================================================
-
-static inline void enter_critical(void) {
-    pwm_ctx.lock = 1;
-    __disable_irq();
-}
-
-static inline void exit_critical(void) {
-    __enable_irq();
-    pwm_ctx.lock = 0;
-}
 
 static void reset_capture_state(void) {
     pwm_ctx.state = CAPTURE_WAIT_RISING;
@@ -61,15 +47,14 @@ static void reset_capture_state(void) {
 
 void pwm_open_measurement_window(void)
 {
-    enter_critical();
+    uint32_t state = critical_enter();
 
     pwm_ctx.measurement_window.count = 0;
     reset_capture_state();
-    pwm_ctx.window_start_time = time_ms();
     pwm_ctx.window_collecting_flag = true;
     pwm_ctx.window_ready_flag = false;
 
-    exit_critical();
+    critical_exit(state);
 }
 
 
@@ -154,24 +139,24 @@ void pwm_input_init(void) {
 }
 
 void pwm_input_stop(void) {
-    enter_critical();
+    uint32_t state = critical_enter();
     
     HAL_TIM_IC_Stop_IT(&htim2, TIM_CHANNEL_1);
     HAL_TIM_IC_Stop_IT(&htim2, TIM_CHANNEL_2);
     
     pwm_ctx.module_state = PWM_STATE_IDLE;
     
-    exit_critical();
+    critical_exit(state);
 }
 
 void pwm_input_resume(void) {
-    enter_critical();
+    uint32_t state = critical_enter();
     
     pwm_ctx.module_state = PWM_STATE_MEASURING;
     HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_1);
     HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_2);
     
-    exit_critical();
+    critical_exit(state);
 }
 
 bool pwm_window_is_open(void)
@@ -181,23 +166,22 @@ bool pwm_window_is_open(void)
 
 void pwm_close_measurement_window(void)
 {
-    enter_critical();
+    uint32_t state = critical_enter();
 
     if (pwm_ctx.window_collecting_flag)
     {
-        pwm_ctx.measurement_window.timestamp_ms = time_ms();
         pwm_ctx.window_collecting_flag = false;
         pwm_ctx.window_ready_flag = true;
     }
 
-    exit_critical();
+    critical_exit(state);
 }
 
 bool pwm_try_get_window(measurement_window_t* out_window)
 {
     bool ready = false;
 
-    enter_critical();
+    uint32_t state = critical_enter();
 
     if (pwm_ctx.window_ready_flag)
     {
@@ -206,13 +190,13 @@ bool pwm_try_get_window(measurement_window_t* out_window)
         ready = true;
     }
 
-    exit_critical();
+    critical_exit(state);
 
     return ready;
 }
 
 void pwm_input_reset(void) {
-    enter_critical();
+    uint32_t state = critical_enter();
     
     memset(&pwm_ctx.measurement_window, 0, sizeof(measurement_window_t));
     
@@ -221,14 +205,14 @@ void pwm_input_reset(void) {
     pwm_ctx.window_ready_flag = false;
     pwm_ctx.window_collecting_flag = false;
     
-    exit_critical();
+    critical_exit(state);
 }
 
 uint8_t pwm_get_current_count(void) {
     uint8_t count;
-    enter_critical();
+    uint32_t state = critical_enter();
     count = pwm_ctx.measurement_window.count;
-    exit_critical();
+    critical_exit(state);
     return count;
 }
 

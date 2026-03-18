@@ -18,6 +18,8 @@ extern "C" {
 
 #define PROCESSING_INTERVAL_MS      500    // Период основного цикла
 #define PROCESSING_TIMEOUT_MS      1500    // Таймаут отсутствия обработки
+#define PROCESSING_WINDOW_MS         64    // Длительность измерительного окна
+#define PROCESSING_BUDGET_MS       (PROCESSING_INTERVAL_MS - PROCESSING_WINDOW_MS)
 
 // ============================================================================
 // Структуры данных
@@ -48,7 +50,23 @@ typedef struct {
     uint32_t success_count;          // Счётчик успешных циклов
     uint32_t error_count;            // Счётчик ошибок
 
+    uint32_t last_cycle_time_ms;
+    uint32_t max_cycle_time_ms;
+    uint32_t over_budget_count;
+    bool last_cycle_over_budget;
+
 } core_context_t;
+
+typedef enum
+{
+    SYSTEM_INIT = 0,
+    SYSTEM_WAIT_FIRST_WINDOW,
+    SYSTEM_NORMAL,
+    SYSTEM_ERROR_WAIT,
+    SYSTEM_FATAL_LOCK
+
+} system_state_t;
+
 
 // ============================================================================
 // Публичные функции

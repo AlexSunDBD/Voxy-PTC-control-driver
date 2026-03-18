@@ -11,27 +11,14 @@
 // ============================================================================
 
 static error_state_t error_ctx;
-static __IO uint32_t error_lock = 0;
 
 // ============================================================================
 // Вспомогательные функции
 // ============================================================================
 
-static inline void enter_critical(void) {
-    __disable_irq();
-    error_lock = 1;
-}
-
-static inline void exit_critical(void) {
-    __enable_irq();
-    error_lock = 0;
-}
-
 static void add_error_to_history(error_type_t type, uint32_t data, bool is_fatal) {
     error_record_t record = {
         .type = type,
-        .timestamp_ms = time_ms(),
-        //'error_record_t {aka struct <anonymous>}' has no member named 'timestamp_ms'
         .data = data,
         .is_fatal = is_fatal
     };
@@ -84,8 +71,6 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
         .error_type = error_type
     };
     
-    enter_critical();
-    
     if (!error_ctx.error_state_active) {
         // Входим в состояние ERROR
         safety_signal_clear();
@@ -122,11 +107,9 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
        
         if (error_ctx.error_count_in_window >= MAX_ERRORS_IN_WINDOW)
         {
-            __disable_irq(); //Для перехода в FATAL critical обязателен.
-                enter_fatal_state(error_type, error_data);
-            __enable_irq();
-            exit_critical();
-
+        
+            enter_fatal_state(error_type, error_data);
+        
             result.system_locked = true;
             result.should_pause = false;
             return result;
@@ -142,17 +125,12 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
     // Немедленный FATAL для ERR_SAFETY_SIGNAL_FAIL
     if (error_type == ERR_SAFETY_SIGNAL_FAIL)
     {
-        __disable_irq(); //Для перехода в FATAL critical обязателен.
-            enter_fatal_state(error_type, error_data);
-        __enable_irq();
-        exit_critical();
-
+        enter_fatal_state(error_type, error_data);
+      
         result.system_locked = true;
         result.should_pause = false;
         return result;
     }    
-    
-    exit_critical();
     
     return result;
 }
@@ -162,7 +140,6 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
 // ============================================================================
 
 void error_handler_init(void) {
-    enter_critical();
     
     memset(&error_ctx, 0, sizeof(error_ctx));
     
@@ -175,7 +152,6 @@ void error_handler_init(void) {
     error_ctx.error_count_in_window = 0;
     error_ctx.window_error_mask = 0;
     
-    exit_critical();
 }
 
 error_result_t error_handler_process(error_type_t error_type, uint32_t error_data) {
@@ -187,16 +163,11 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
         .error_type = error_type
     };
     
-    enter_critical();
-
     bool fatal_active = error_ctx.fatal_state_active;
-    exit_critical();
-
+ 
     if (fatal_active) {
         if (error_type == ERR_SAFETY_SIGNAL_FAIL) {
-            enter_critical();
             error_ctx.window_error_mask |= (1 << error_type);
-            exit_critical();
         }
         result.error_handled = true;
         result.system_locked = true;
@@ -217,10 +188,8 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
             return handle_normal_error(error_type, error_data);
             
         case ERR_FATAL:
-            __disable_irq(); //Для перехода в FATAL critical обязателен.
                 enter_fatal_state(error_type, error_data);
-            __enable_irq();
-
+   
             result.system_locked = true;
             result.error_handled = true;
             return result;
@@ -240,7 +209,6 @@ bool error_handler_timeout_expired(void) {
 }
 
 void error_handler_resume(void) {
-    enter_critical();
     
     if (error_ctx.error_state_active &&
         !error_ctx.fatal_state_active &&
@@ -251,8 +219,6 @@ void error_handler_resume(void) {
         error_ctx.error_state_active = false;
         error_ctx.error_resets++;
     }
-    
-    exit_critical();
 }
 
 bool error_handler_check_processing_timeout(uint32_t last_processing_time) {

@@ -62,17 +62,17 @@ static bool is_digit(char c) {
 }
 
 static uint16_t string_to_uint16(const char* str, uint16_t max_value) {
-    uint16_t result = 0;
-    
+    uint32_t result = 0;
+
     while (*str && is_digit(*str)) {
-        result = result * 10 + (*str - '0');
+        result = result * 10u + (uint32_t)(*str - '0');
         if (result > max_value) {
             return max_value;
         }
         str++;
     }
-    
-    return result;
+
+    return (uint16_t)result;
 }
 
 void bluetooth_cmd_diagnostic(void)   //заглушка

@@ -27,11 +27,7 @@
 // Глобальные переменные системы
 // ============================================================================
 
-typedef struct {
-    bool init_phase;
-} system_global_state_t;
-
-static system_global_state_t system_state;
+static system_state_t run_state = SYSTEM_INIT;
 
 // ============================================================================
 // Вспомогательные функции
@@ -42,9 +38,6 @@ static system_global_state_t system_state;
 // ============================================================================
 
 static void system_initialize(void) {
-    // 1. Очищаем состояние системы
-    memset(&system_state, 0, sizeof(system_state));
-    
     // 2. Инициализация железа (включает UART)
     hardware_init();
     
@@ -71,22 +64,13 @@ static void system_initialize(void) {
     error_handler_init();
     led_fsm_init();
     
-    // Устанавливаем начальное состояние
-    system_state.init_phase = true;
-    
-    // Отправляем READY сообщение
-    HAL_Delay(10);  // Небольшая пауза перед финальным READY
-    send_line("\r\nREADY\r\n");
-}
+    // Небольшая пауза перед финальным READY
+    HAL_Delay(10);
 
-static void MX_IWDG_Init(void) {
-    extern IWDG_HandleTypeDef hiwdg;
-    hiwdg.Instance = IWDG;
-    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
-    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;  // 750 мс таймаут
-    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
-        Error_Handler();
-    }
+    // Отправляем READY сообщение
+    send_line("\r\nREADY\r\n");
+
+    hardware_iwdg_init();
 }
 
 // ============================================================================
@@ -150,10 +134,7 @@ static void system_main_tasks(void) {
 
         pwm_input_reset();
         core_reset_state();
-        
-        system_state.init_phase = true;
     }
-
     return;
 }
 }
@@ -164,49 +145,95 @@ static void system_main_tasks(void) {
 
 int main(void) {
     system_initialize();
-    
-    MX_IWDG_Init();
 
     //====================================== WHILE(1) ================================================
     while (1)
     {
-        if (system_state.init_phase)
+        measurement_window_t window;
+
+        switch (run_state)
         {
-            measurement_window_t window;
+            case SYSTEM_INIT:
+                run_state = SYSTEM_WAIT_FIRST_WINDOW;
+                iwdg_refresh();
+                break;
 
-            if (pwm_try_get_window(&window))
-            {
-                processing_result_t result = core_process_cycle(&window);
+            case SYSTEM_WAIT_FIRST_WINDOW:
+                system_main_tasks();
 
-                if (result.success)
+                if (pwm_try_get_window(&window))
                 {
-                    system_state.init_phase = false;
+                    processing_result_t result = core_process_cycle(&window);
+                    if (result.success)
+                    {
+                        run_state = SYSTEM_NORMAL;
+                    }
                 }
-            }
 
-            continue;
+                if (error_handler_get_state()->fatal_state_active)
+                {
+                    run_state = SYSTEM_FATAL_LOCK;
+                }
+                else if (error_handler_get_state()->error_state_active)
+                {
+                    run_state = SYSTEM_ERROR_WAIT;
+                }
+
+                iwdg_refresh();
+                break;
+
+            case SYSTEM_NORMAL:
+                system_main_tasks();
+
+                if (pwm_try_get_window(&window))
+                {
+                    core_process_cycle(&window);
+                }
+
+                if (error_handler_check_processing_timeout(core_get_context()->last_processing_time))
+                {
+                    error_handler_process(ERR_PROCESSING_TIMEOUT, 0);
+                }
+
+                if (error_handler_get_state()->fatal_state_active)
+                {
+                    run_state = SYSTEM_FATAL_LOCK;
+                }
+                else if (error_handler_get_state()->error_state_active)
+                {
+                    run_state = SYSTEM_ERROR_WAIT;
+                }
+
+                iwdg_refresh();
+                break;
+
+            case SYSTEM_ERROR_WAIT:
+                system_main_tasks();
+
+                if (error_handler_get_state()->fatal_state_active)
+                {
+                    run_state = SYSTEM_FATAL_LOCK;
+                }
+                else if (!error_handler_get_state()->error_state_active)
+                {
+                    run_state = SYSTEM_WAIT_FIRST_WINDOW;
+                }
+
+                iwdg_refresh();
+                break;
+
+            case SYSTEM_FATAL_LOCK:
+                system_main_tasks();
+                iwdg_refresh();
+                break;
+
+            default:
+                /* watchdog не кормим: состояние вне контракта автомата */
+                break;
         }
 
-        system_background_tasks();
+        system_background_tasks(); // Блютуз, LED индикация и т.п.
 
-        if (!error_handler_get_state()->fatal_state_active)
-        {
-            system_main_tasks();
-
-            measurement_window_t window;
-
-            if (pwm_try_get_window(&window))
-            {
-                core_process_cycle(&window);
-            }
-
-            if (error_handler_check_processing_timeout(core_get_context()->last_processing_time))
-            {
-                error_handler_process(ERR_PROCESSING_TIMEOUT, 0);
-            }
-        }
-
-        iwdg_refresh();
     }
     
     return 0;

@@ -189,25 +189,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   if (htim->Instance == TIM3)
   {
-    system_tick_ms++;      // ЕДИНСТВЕННАЯ временная база
+    system_tick_ms++;      // Временная база time_ms() для логики проекта
 
     static uint16_t ms_counter = 0;
-  
-    if (ms_counter == 0)
-    {
-      pwm_open_measurement_window();
+
+    /* 0 мс: открыть окно накопления */
+    if (ms_counter == 0) {
+        pwm_open_measurement_window();
     }
 
     ms_counter++;
 
-    if (ms_counter == ACCUMULATION_WINDOW_MS)
-    {
-      pwm_close_measurement_window();
+    /* 64 мс: закрыть окно накопления */
+    if (ms_counter == PROCESSING_WINDOW_MS) {
+        pwm_close_measurement_window();
     }
 
-    if (ms_counter >= PROCESSING_INTERVAL_MS)
-    {
-      ms_counter = 0;
+    /* 500 мс: начать новый цикл */
+    if (ms_counter >= PROCESSING_INTERVAL_MS) {
+        ms_counter = 0;
     }
   }
 }

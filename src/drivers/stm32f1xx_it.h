@@ -33,6 +33,7 @@ void TIM3_IRQHandler(void);
 
 // UART
 void USART2_IRQHandler(void);
+void DMA1_Channel7_IRQHandler(void);
 
 #ifdef __cplusplus
 }

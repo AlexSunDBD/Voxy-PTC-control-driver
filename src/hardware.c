@@ -45,6 +45,28 @@ void iwdg_refresh(void) {
     HAL_IWDG_Refresh(&hiwdg);
 }
 
+void hardware_iwdg_init(void) {
+    hiwdg.Instance = IWDG;
+    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
+    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;
+
+    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+uint32_t critical_enter(void) {
+    uint32_t primask = __get_PRIMASK();
+    __disable_irq();
+    return primask;
+}
+
+void critical_exit(uint32_t state) {
+    if ((state & 0x1u) == 0u) {
+        __enable_irq();
+    }
+}
+
 // ============================================================================
 // Функции управления GPIO
 // ============================================================================
@@ -183,7 +205,9 @@ static void MX_GPIO_Init(void) {
     HEATER3_OFF;                // PB12 = 1 (ТЭН 3 выключен)
     LED_OFF;                    // Светодиод выключен
 }
-
+    
+    // ==================== ТАЙМЕРЫ ====================
+    
 static void MX_TIM1_Init(void) {
     TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
@@ -322,15 +346,6 @@ static void MX_USART2_UART_Init(void) {
     }
 }
 
-/*static void MX_IWDG_Init(void) {
-    hiwdg.Instance = IWDG;
-    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
-    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;  // 750 мс таймаут
-    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
-        Error_Handler();
-    }
-}*/
-
 void Error_Handler(void) {
     // Бесконечный цикл с миганием светодиода при ошибке
     while (1) {
@@ -360,7 +375,6 @@ void hardware_init(void) {
     HAL_NVIC_EnableIRQ(TIM3_IRQn);
 
     MX_USART2_UART_Init();
-    // MX_IWDG_Init(); преждевременный запуск IWDG перенесен в основной цикл
      
     // Запуск таймеров
     HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);

@@ -24,16 +24,15 @@ static uint8_t zero_confirm_counter = 0;
 // ============================================================================
 
 void core_fsm_init(void) {
-    memset(&core_ctx, 0, sizeof(core_ctx));
-    
-    core_ctx.target_level = 0;
-    
-    core_ctx.last_processing_time = time_ms();
 
+    memset(&core_ctx, 0, sizeof(core_ctx));
+    core_ctx.target_level = 0;
+    core_ctx.last_processing_time = time_ms();
     voltage_monitoring_reset_limit();
 }
 
 processing_result_t core_process_cycle(const measurement_window_t* window) {
+    uint32_t t0 = time_ms();
     processing_result_t result = {
         .success = false,
     };
@@ -99,13 +98,6 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     if (final_state < 0) final_state = 0;
     if (final_state > 3) final_state = 3;
 
-    bluetooth_send_auto_message(
-        //implicit declaration of function 'bluetooth_send_auto_message' [-Wimplicit-function-declaration]
-            heater.target_level,
-            limit,
-            final_state);
-            
-
     /* 6. Преобразование в битовую маску */
     heater_mask_t target_bitmask = state_to_bitmask((heater_level_t)final_state);
     
@@ -158,14 +150,23 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // 9. Завершение цикла
     // ====================================================
     result.success = true;
-    safety_timeout_update_activity();
-    // implicit declaration of function 'safety_timeout_update_activity'; did you mean 'safety_timeout_update'? [-Wimplicit-function-declaration]
     core_ctx.success_count++;
 
     result.actual_state = actual_now;
 
     result.target_level = final_state;
-    // а нужен ли этот "snapshot наружу"? Может есть смысл оптимизировать структуру и обойтись одной переменной?
+
+    uint32_t dt = time_ms() - t0;
+    core_ctx.last_cycle_time_ms = dt;
+    core_ctx.last_cycle_over_budget = (dt > PROCESSING_BUDGET_MS);
+
+    if (dt > core_ctx.max_cycle_time_ms) {
+        core_ctx.max_cycle_time_ms = dt;
+    }
+
+    if (core_ctx.last_cycle_over_budget) {
+        core_ctx.over_budget_count++;
+    }
 
     return result;
 }
