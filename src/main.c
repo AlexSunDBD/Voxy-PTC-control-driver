@@ -178,45 +178,81 @@ int main(void) {
         switch (run_state)
         {
             case SYSTEM_INIT:
-                if (pwm_try_get_window(&window)) {
+                run_state = SYSTEM_WAIT_FIRST_WINDOW;
+                iwdg_refresh();
+                break;
+
+            case SYSTEM_WAIT_FIRST_WINDOW:
+                system_main_tasks();
+
+                if (pwm_try_get_window(&window))
+                {
                     processing_result_t result = core_process_cycle(&window);
-                    if (result.success) {
+                    if (result.success)
+                    {
                         run_state = SYSTEM_NORMAL;
                     }
                 }
-                iwdg_refresh();
-                 break;
 
-            case SYSTEM_WAIT_FIRST_WINDOW:
-            case SYSTEM_NORMAL:
+                if (error_handler_get_state()->fatal_state_active)
                 {
-                    system_main_tasks();
-
-                    if (pwm_try_get_window(&window))
-                    {
-                        core_process_cycle(&window);
-                    }
-
-                    if (error_handler_check_processing_timeout(core_get_context()->last_processing_time))
-                    {
-                        error_handler_process(ERR_PROCESSING_TIMEOUT, 0);
-                    }
+                    run_state = SYSTEM_FATAL_LOCK;
                 }
+                else if (error_handler_get_state()->error_state_active)
+                {
+                    run_state = SYSTEM_ERROR_WAIT;
+                }
+
+                iwdg_refresh();
+                break;
+
+            case SYSTEM_NORMAL:
+                system_main_tasks();
+
+                if (pwm_try_get_window(&window))
+                {
+                    core_process_cycle(&window);
+                }
+
+                if (error_handler_check_processing_timeout(core_get_context()->last_processing_time))
+                {
+                    error_handler_process(ERR_PROCESSING_TIMEOUT, 0);
+                }
+
+                if (error_handler_get_state()->fatal_state_active)
+                {
+                    run_state = SYSTEM_FATAL_LOCK;
+                }
+                else if (error_handler_get_state()->error_state_active)
+                {
+                    run_state = SYSTEM_ERROR_WAIT;
+                }
+
                 iwdg_refresh();
                 break;
 
             case SYSTEM_ERROR_WAIT:
-                /* обработка соответствующих состояний */
+                system_main_tasks();
+
+                if (error_handler_get_state()->fatal_state_active)
+                {
+                    run_state = SYSTEM_FATAL_LOCK;
+                }
+                else if (!error_handler_get_state()->error_state_active)
+                {
+                    run_state = SYSTEM_WAIT_FIRST_WINDOW;
+                }
+
                 iwdg_refresh();
                 break;
 
             case SYSTEM_FATAL_LOCK:
-                /* обработка соответствующих состояний */
+                system_main_tasks();
                 iwdg_refresh();
                 break;
 
             default:
-                /* watchdog не кормим */
+                /* watchdog не кормим: состояние вне контракта автомата */
                 break;
         }
 

@@ -158,8 +158,14 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
 
     uint32_t dt = time_ms() - t0;
     core_ctx.last_cycle_time_ms = dt;
+    core_ctx.last_cycle_over_budget = (dt > PROCESSING_BUDGET_MS);
+
     if (dt > core_ctx.max_cycle_time_ms) {
         core_ctx.max_cycle_time_ms = dt;
+    }
+
+    if (core_ctx.last_cycle_over_budget) {
+        core_ctx.over_budget_count++;
     }
 
     return result;
