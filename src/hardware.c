@@ -334,15 +334,6 @@ static void MX_USART2_UART_Init(void) {
     }
 }
 
-/*static void MX_IWDG_Init(void) {
-    hiwdg.Instance = IWDG;
-    hiwdg.Init.Prescaler = IWDG_PRESCALER_32;
-    hiwdg.Init.Reload = IWDG_TIMEOUT_MS;  // 750 мс таймаут
-    if (HAL_IWDG_Init(&hiwdg) != HAL_OK) {
-        Error_Handler();
-    }
-}*/
-
 void Error_Handler(void) {
     // Бесконечный цикл с миганием светодиода при ошибке
     while (1) {

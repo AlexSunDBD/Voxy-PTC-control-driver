@@ -31,7 +31,6 @@ typedef struct {
     bool init_phase;
 } main_system_state_t;
 
-static main_system_state_t main_state;
 static system_state_t run_state = SYSTEM_INIT;
 
 // ============================================================================
@@ -53,9 +52,6 @@ static void MX_IWDG_Init(void) {
 }
 
 static void system_initialize(void) {
-    // 1. Очищаем состояние системы
-    memset(&main_state, 0, sizeof(main_state));
-    
     // 2. Инициализация железа (включает UART)
     hardware_init();
     
@@ -81,9 +77,6 @@ static void system_initialize(void) {
     safety_timeout_init();
     error_handler_init();
     led_fsm_init();
-    
-    // Устанавливаем начальное состояние
-    main_state.init_phase = true;
     
     // Небольшая пауза перед финальным READY
     HAL_Delay(10);
@@ -155,10 +148,7 @@ static void system_main_tasks(void) {
 
         pwm_input_reset();
         core_reset_state();
-        
-        main_state.init_phase = true;
     }
-
     return;
 }
 }
