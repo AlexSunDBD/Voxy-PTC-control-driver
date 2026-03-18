@@ -174,11 +174,12 @@ bool are_all_outputs_off(void)
 }
 
 bool emergency_shutdown(void) {
-        force_all_outputs_off();
-    
+    force_all_outputs_off();
+
+    /* блокирующая задержка здесь требует отдельного подтверждения по ТЗ */
     delay_ms(OUT_STABILIZATION_MS);
     heater_mask_t actual = output_read_bitmask();
-    
+
     return (actual == HEATER_STATE_0);
 }
 
