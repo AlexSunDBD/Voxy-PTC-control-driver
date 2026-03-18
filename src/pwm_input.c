@@ -26,13 +26,11 @@ static struct {
     uint32_t last_rising_edge;            // Время последнего RISING фронта
     
     // Тайминги
-    uint32_t window_start_time;           // Время начала активного окна
     volatile bool window_collecting_flag; // Флаг открытого окна
     pwm_state_t module_state;             // Общее состояние модуля
     
     // Статистика
     uint32_t total_measurements;
-    uint32_t valid_measurements;
     uint32_t missed_rising_count;
     
 } pwm_ctx;
@@ -53,7 +51,6 @@ void pwm_open_measurement_window(void)
 
     pwm_ctx.measurement_window.count = 0;
     reset_capture_state();
-    pwm_ctx.window_start_time = time_ms();
     pwm_ctx.window_collecting_flag = true;
     pwm_ctx.window_ready_flag = false;
 
