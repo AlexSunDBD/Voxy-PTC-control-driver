@@ -35,8 +35,6 @@ static struct {
     uint32_t valid_measurements;
     uint32_t missed_rising_count;
     
-    // Критическая секция
-    __IO uint32_t lock;
 } pwm_ctx;
 
 // ============================================================================
