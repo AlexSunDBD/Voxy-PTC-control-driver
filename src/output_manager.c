@@ -3,7 +3,7 @@
 #include "output_manager.h"
 #include "hardware.h"
 #include "safety_timeout.h"
-#include "safety_signal.h"
+#include "safety_signal.h"  // OUT_STABILIZATION_MS
 #include <string.h>
 
 // ============================================================================
@@ -114,7 +114,6 @@ void output_manager_init(void)
 {
     memset(&output_ctx, 0, sizeof(output_ctx));
 
-    output_ctx.commanded_state = HEATER_STATE_0;
     output_ctx.last_confirmed = HEATER_STATE_0;
 
     force_all_outputs_off();
@@ -140,9 +139,6 @@ void apply_output_state(heater_mask_t target_level)
     /* защита от недопустимой маски */
     if (!is_valid_heater_bitmask(target_level))
         return;
-
-    /* сохраняем команду */
-    output_ctx.commanded_state = target_level;
 
     /* Если состояние не изменилось — ничего не делаем */
     if (target_level == output_ctx.last_confirmed)

@@ -27,7 +27,6 @@ extern "C" {
  */
 typedef struct
 {
-    heater_mask_t commanded_state;
     heater_mask_t last_confirmed;
     uint32_t last_switch_time;
 } output_state_t;
