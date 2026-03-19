@@ -88,6 +88,13 @@ int8_t voltage_monitoring_get_limit(void);
 void voltage_monitoring_init(void);
 void voltage_monitoring_reset_limit(void);
 
+void voltage_monitoring_increase_request(int8_t delta_required);
+void voltage_monitoring_decrease_request(int8_t delta_required);
+
+const vm_state_t* voltage_monitoring_get_state(void);
+vm_result_t voltage_monitoring_get_last_result(void);
+void voltage_monitoring_clear_error(void);
+
 #endif // VOLTAGE_MONITORING_H
 
 

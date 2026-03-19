@@ -20,9 +20,9 @@ extern "C" {
 
 // Определения состояний
 #define HEATER_STATE_0              0x00    // Все выключены
-#define HEATER_STATE_1              0x01    // ТЭН 1 включен (PB1)
-#define HEATER_STATE_2              0x03    // ТЭН 1+2 включены (PB1 + PB10)
-#define HEATER_STATE_3              0x07    // Все три ТЭНа включены (PB1 + PB10 + PB11)
+#define HEATER_STATE_1              0x01    // ТЭН 1 включен (PB14)
+#define HEATER_STATE_2              0x03    // ТЭН 1+2 включены (PB14 + PB13)
+#define HEATER_STATE_3              0x07    // Все три ТЭНа включены (PB14 + PB13 + PB12)
 
 // Маски выходов
 #define HEATER_MASK_1               (1 << 0)  // PB14
@@ -106,12 +106,20 @@ uint8_t state_to_bitmask(uint8_t state);
 bool is_valid_heater_bitmask(uint8_t bitmask);
 
 /**
- * @brief Получить текстовое описание состояния
+ * @brief Получить текстовое описание кода состояния
  * 
- * @param state Состояние (0-3 или битовая маска)
+ * @param state Код состояния (0-3)
  * @return Строка с описанием
  */
-const char* heater_state_to_string(uint8_t state);
+const char* heater_state_to_string(heater_level_t state);
+
+/**
+ * @brief Получить текстовое описание битовой маски
+ * 
+ * @param bitmask Битовая маска (0x00,0x01,0x03,0x07)
+ * @return Строка с описанием
+ */
+const char* heater_bitmask_to_string(heater_mask_t bitmask);
 
 #ifdef __cplusplus
 }

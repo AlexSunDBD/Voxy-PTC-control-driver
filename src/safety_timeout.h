@@ -63,11 +63,11 @@ void safety_timeout_init(void);
 bool safety_timeout_update(heater_level_t target_level);
 
 /**
- * @brief Проверить таймаут безопасности
+ * @brief Проверить таймаут безопасност
  * 
  * Проверяет, не превышен ли SAFETY_TIMEOUT при целевом состоянии 0.
  * Формирует ERR_SAFETY_TIMEOUT если по истечении SAFETY_TIMEOUT_MS
- * любой из выходов PB1, PB10 или PB11 остаётся активным.
+ * любой из выходов PB14, PB13 или PB12 остаётся активным.
  * 
  * @return true - таймаут безопасности превышен, false - безопасность в норме
  */

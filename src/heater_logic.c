@@ -72,28 +72,8 @@ bool is_valid_heater_bitmask(uint8_t bitmask) {
            (bitmask == HEATER_STATE_3);    // 0b111
 }
 
-const char* heater_state_to_string(uint8_t state) {
-    // Поддерживаем два возможных входа:
-    //  - код состояния (0..3)
-    //  - битовая маска (0x00,0x01,0x03,0x07)
-    uint8_t code_state;
-
-    if (state <= 3) {
-        // Уже код состояния
-        code_state = state;
-    } else {
-        // Интерпретируем как битовую маску
-        switch (state) {
-            case HEATER_STATE_0: code_state = 0; break;
-            case HEATER_STATE_1: code_state = 1; break;
-            case HEATER_STATE_2: code_state = 2; break;
-            case HEATER_STATE_3: code_state = 3; break;
-            default:
-                return "INVALID";
-        }
-    }
-
-    switch (code_state) {
+const char* heater_state_to_string(heater_level_t state) {
+    switch (state) {
         case 0: return "STATE_0 (All OFF)";
         case 1: return "STATE_1 (Heater 1 ON)";
         case 2: return "STATE_2 (Heaters 1+2 ON)";
@@ -102,6 +82,15 @@ const char* heater_state_to_string(uint8_t state) {
     }
 }
 
+const char* heater_bitmask_to_string(heater_mask_t bitmask) {
+    switch (bitmask) {
+        case HEATER_STATE_0: return "STATE_0 (All OFF)";
+        case HEATER_STATE_1: return "STATE_1 (Heater 1 ON)";
+        case HEATER_STATE_2: return "STATE_2 (Heaters 1+2 ON)";
+        case HEATER_STATE_3: return "STATE_3 (All heaters ON)";
+        default: return "INVALID";
+    }
+}
 
 // ============================================================================
 // Дополнительные функции для тестирования

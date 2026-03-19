@@ -2,13 +2,21 @@
 
 #include "output_manager.h"
 #include "hardware.h"
-#include "safety_signal.h"  
+#include "safety_timeout.h"
+#include "safety_signal.h"
+#include <string.h>
 
 // ============================================================================
 // Внутренние переменные
 // ============================================================================
 
 static output_state_t output_ctx;
+
+// ============================================================================
+// Локальные прототипы
+// ============================================================================
+
+static void force_all_outputs_off(void);
 
 // ============================================================================
 // Вспомогательные функции
@@ -128,6 +136,10 @@ void apply_output_state(heater_mask_t target_level)
      * Пререключение при target_level == HEATER_STATE_0
      * не блокируется.
     */
+
+    /* защита от недопустимой маски */
+    if (!is_valid_heater_bitmask(target_level))
+        return;
 
     /* сохраняем команду */
     output_ctx.commanded_state = target_level;
