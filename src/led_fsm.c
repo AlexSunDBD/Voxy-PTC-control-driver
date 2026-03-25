@@ -79,12 +79,14 @@ static uint8_t get_target_flashes(void) {
     }
 }
 
-static uint8_t fatal_visible_count(uint8_t mask)
+static uint8_t fatal_visible_count(void)
 {
+    const error_state_t* es = error_handler_get_state();
     uint8_t count = 0;
 
-    for (uint8_t i = 0; i < FATAL_MAP_SIZE; i++) {
-        if (mask & (1u << fatal_map[i].type)) {
+    for (uint8_t i = 0; i < es->error_history_count; i++) {
+        uint8_t idx = (es->error_history_index + ERROR_HISTORY_SIZE - es->error_history_count + i) % ERROR_HISTORY_SIZE;
+        if (es->error_history[idx].is_fatal) {
             count++;
         }
     }
@@ -182,7 +184,7 @@ void led_fsm_update(void) {
                     
                 case LED_MODE_FATAL:
                     if ((current_time - led_fsm.timer) >= LED_LONG_PAUSE_MS) {
-                        if (es->window_error_mask != 0) {
+                        if (fatal_visible_count() > 0) {
                             led_fsm.step = 2;
                             led_fsm.flash_count = 0;
                         } else {
@@ -216,8 +218,6 @@ void led_fsm_update(void) {
                     
                     if (led_fsm.flash_count >= target_flashes) {
                         if (led_fsm.current_mode == LED_MODE_FATAL) {
-
-                            uint8_t mask = es->window_error_mask;
 
                             uint8_t count = fatal_visible_count(mask);
 
