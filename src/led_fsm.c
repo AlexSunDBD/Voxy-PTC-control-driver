@@ -56,13 +56,12 @@ static uint8_t get_target_flashes(void) {
 
             for (uint8_t i = 0, v = 0; i < FATAL_MAP_SIZE; i++) {
 
-                if (mask & (1u << fatal_map[i].type)) {
+                // Источник кодов для FATAL — error_history с is_fatal == true,
+                // а не window_error_mask.
+                const error_state_t* es = error_handler_get_state();
+                // 1) получить N-й фатальный код из es->error_history
+                // 2) count = число записей history, где is_fatal == true
 
-                    if (v == led_fsm.fatal_code_index)
-                        return fatal_map[i].code;
-
-                    v++;
-                }
             }
 
             return 0;
@@ -285,12 +284,11 @@ void led_fsm_auto_update(const error_state_t* error_state, uint8_t current_outpu
                 error_type_to_code(error_state->error_history[idx].type);
         }
     } else if (led_fsm.current_mode == LED_MODE_ERROR &&
-            !error_state->error_state_active &&
-            error_state->total_errors == 0)
-    {
-        new_mode = LED_MODE_INIT;
-    } else {
-        new_mode = LED_MODE_ACTIVE;
+            !error_state->error_state_active) 
+        {
+            new_mode = LED_MODE_ACTIVE;
+        } else {
+            new_mode = LED_MODE_ACTIVE;
     }
     
     // Устанавливаем режим если он изменился

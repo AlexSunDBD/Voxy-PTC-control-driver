@@ -55,17 +55,20 @@ static void enter_fatal_state(error_type_t error_type, uint32_t error_data)
     error_ctx.error_history_index = 0;
     error_ctx.error_history_count = 0;
 
-    // 1) Уникальные коды из окна, которые привели к FATAL
-    for (uint8_t code = ERR_INSUFFICIENT_VALID; code <= ERR_VOLTAGE_NO_NOMINAL; code++) {
-        if (error_ctx.window_error_mask & (1u << code)) {
-            add_error_to_history((error_type_t)code, 0, true);
-        }
-    }
+    // Вариант с явным признаком источника FATAL:
+    // enter_fatal_state(error_type_t error_type, uint32_t error_data, bool from_window_limit)
 
-    // 2) Текущий код фатального события, если его еще нет в mask
-    if ((error_ctx.window_error_mask & (1u << error_type)) == 0u) {
+    if (from_window_limit) {
+        for (uint8_t code = ERR_INSUFFICIENT_VALID; code <= ERR_VOLTAGE_NO_NOMINAL; code++) {
+            if (error_ctx.window_error_mask & (1u << code)) {
+                add_error_to_history((error_type_t)code, 0, true);
+            }
+        }
+    } else {
+        // FATAL не из окна: история начинается с текущего фатального кода
         add_error_to_history(error_type, error_data, true);
     }
+
 
     error_ctx.total_errors++;
     error_ctx.total_fatals++;
