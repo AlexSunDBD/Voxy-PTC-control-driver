@@ -35,7 +35,7 @@ typedef enum {
     ERR_VOLTAGE_NO_NOMINAL,                 // Низкое напряжение сети  
     
     // Потеря управления защитой (немедленный FATAL)
-    ERR_SAFETY_SIGNAL_FAIL,                 // Ошибка сигнала безопасности (PB15)
+    ERR_SAFETY_SIGNAL_FAIL,                 // Ошибка сигнала безопасности
     
     // Критическая ошибка (состояние)
     ERR_FATAL                               // Критическая ошибка (FATAL)

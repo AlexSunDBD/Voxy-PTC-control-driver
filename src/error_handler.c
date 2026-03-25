@@ -51,10 +51,21 @@ static void enter_fatal_state(error_type_t error_type, uint32_t error_data)
     bool shutdown_ok = emergency_shutdown();
     (void)shutdown_ok; // можно позже усилить проверку
 
-    add_error_to_history(error_type, error_data, true);
+    // Очистка истории перед формированием "фатальной истории"
+    error_ctx.error_history_index = 0;
+    error_ctx.error_history_count = 0;
 
-    // фиксируем маску видов ошибок, приведших к FATAL
-    // ничего не очищаем
+    // 1) Уникальные коды из окна, которые привели к FATAL
+    for (uint8_t code = ERR_INSUFFICIENT_VALID; code <= ERR_VOLTAGE_NO_NOMINAL; code++) {
+        if (error_ctx.window_error_mask & (1u << code)) {
+            add_error_to_history((error_type_t)code, 0, true);
+        }
+    }
+
+    // 2) Текущий код фатального события, если его еще нет в mask
+    if ((error_ctx.window_error_mask & (1u << error_type)) == 0u) {
+        add_error_to_history(error_type, error_data, true);
+    }
 
     error_ctx.total_errors++;
     error_ctx.total_fatals++;
@@ -113,24 +124,12 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
             result.should_pause = false;
             return result;
         }
-        add_error_to_history(error_type, error_data, false);
-        
         error_ctx.total_errors++;
         error_ctx.last_error_time = time_ms();
     } else {
         result.should_pause = false;
     }
 
-    // Немедленный FATAL для ERR_SAFETY_SIGNAL_FAIL
-    if (error_type == ERR_SAFETY_SIGNAL_FAIL)
-    {
-        enter_fatal_state(error_type, error_data);
-      
-        result.system_locked = true;
-        result.should_pause = false;
-        return result;
-    }    
-    
     return result;
 }
 
@@ -166,10 +165,12 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
  
     if (fatal_active) {
         if (error_type == ERR_SAFETY_SIGNAL_FAIL) {
-            add_error_to_history(error_type, error_data, true);
+            if ((error_ctx.window_error_mask & (1u << ERR_SAFETY_SIGNAL_FAIL)) == 0u) {
+                add_error_to_history(ERR_SAFETY_SIGNAL_FAIL, error_data, true);
+                error_ctx.window_error_mask |= (1u << ERR_SAFETY_SIGNAL_FAIL);
+            }
             error_ctx.total_errors++;
             error_ctx.last_error_time = time_ms();
-            error_ctx.window_error_mask |= (1 << error_type);
         }
         result.error_handled = true;
         result.system_locked = true;
