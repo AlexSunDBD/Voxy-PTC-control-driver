@@ -40,7 +40,7 @@ static bool is_error_counted_in_window(error_type_t error_type) {
             error_type == ERR_VOLTAGE_NO_NOMINAL);
 }
 
-static void enter_fatal_state(error_type_t error_type, uint32_t error_data)
+static void enter_fatal_state(error_type_t error_type, uint32_t error_data, bool from_window_limit)
 {
     error_ctx.fatal_state_active = true;
     error_ctx.outputs_locked = true;
@@ -56,7 +56,6 @@ static void enter_fatal_state(error_type_t error_type, uint32_t error_data)
     error_ctx.error_history_count = 0;
 
     // Вариант с явным признаком источника FATAL:
-    // enter_fatal_state(error_type_t error_type, uint32_t error_data, bool from_window_limit)
 
     if (from_window_limit) {
         for (uint8_t code = ERR_INSUFFICIENT_VALID; code <= ERR_VOLTAGE_NO_NOMINAL; code++) {
@@ -121,7 +120,7 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
         if (error_ctx.error_count_in_window >= MAX_ERRORS_IN_WINDOW)
         {
         
-            enter_fatal_state(error_type, error_data);
+            enter_fatal_state(error_type, error_data, true);
         
             result.system_locked = true;
             result.should_pause = false;
@@ -186,7 +185,7 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
     
     switch (error_type) {
         case ERR_SAFETY_SIGNAL_FAIL:
-            enter_fatal_state(error_type, error_data);
+            enter_fatal_state(error_type, error_data, false);
             result.error_handled = true;
             result.system_locked = true;
             result.should_pause = false;
@@ -200,7 +199,7 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
             return handle_normal_error(error_type, error_data);
             
         case ERR_FATAL:
-                enter_fatal_state(error_type, error_data);
+                enter_fatal_state(error_type, error_data, false);
    
             result.system_locked = true;
             result.error_handled = true;

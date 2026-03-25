@@ -52,21 +52,28 @@ static uint8_t get_target_flashes(void) {
             
         case LED_MODE_FATAL:
         {
-            uint8_t mask = error_handler_get_state()->window_error_mask;
+            const error_state_t* es = error_handler_get_state();
+            uint8_t visible = 0;
 
-            for (uint8_t i = 0, v = 0; i < FATAL_MAP_SIZE; i++) {
+            for (uint8_t i = 0; i < es->error_history_count; i++) {
+                uint8_t idx = (es->error_history_index + ERROR_HISTORY_SIZE - es->error_history_count + i) % ERROR_HISTORY_SIZE;
+                error_type_t t = es->error_history[idx].type;
+                bool is_fatal = es->error_history[idx].is_fatal;
 
-                // Источник кодов для FATAL — error_history с is_fatal == true,
-                // а не window_error_mask.
-                const error_state_t* es = error_handler_get_state();
-                // 1) получить N-й фатальный код из es->error_history
-                // 2) count = число записей history, где is_fatal == true
+                if (!is_fatal) continue;
 
+                for (uint8_t j = 0; j < FATAL_MAP_SIZE; j++) {
+                    if (fatal_map[j].type == t) {
+                        if (visible == led_fsm.fatal_code_index) return fatal_map[j].code;
+                        visible++;
+                        break;
+                    }
+                }
             }
 
             return 0;
         }
-            
+
         default:
             return 0;
     }
