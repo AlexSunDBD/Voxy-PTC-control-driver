@@ -98,13 +98,17 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     if (final_state < 0) final_state = 0;
     if (final_state > 3) final_state = 3;
 
-    /* 6. Преобразование в битовую маску */
+    /* 4. Флаг нулевого итогового состояния */
+    bool final_is_zero = (final_state == 0);
+
+    /* 5. Преобразование в битовую маску */
     heater_mask_t target_bitmask = state_to_bitmask((heater_level_t)final_state);
     
+
     // ====================================================
     // 6. Двойное подтверждение нуля
     // ====================================================
-    if (heater.is_zero_state)
+    if (final_is_zero)
     {
         zero_confirm_counter++;
 
@@ -131,7 +135,7 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // ====================================================
     // 8. SAFETY_TIMEOUT логика (защита от не выключения тэнов)
     // ====================================================
-    if (heater.is_zero_state)
+    if (final_is_zero)
     {
         if (safety_timeout_check())
         {
@@ -151,7 +155,6 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // ====================================================
     result.success = true;
     core_ctx.success_count++;
-
     result.actual_state = actual_now;
 
     result.target_level = final_state;
