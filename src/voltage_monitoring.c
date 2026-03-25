@@ -299,6 +299,7 @@ int8_t voltage_monitoring_task(int8_t required) {
         vm_ctx.last_error = error;
         vm_last_result.success = false;
         vm_last_result.timestamp_ms = vm_ctx.timestamp_ms;
+        vm_ctx.last_required = required;
         return -1; // Ввозвращаем "-1" это означает ошибка
     }
     

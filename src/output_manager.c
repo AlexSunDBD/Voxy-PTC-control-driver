@@ -77,7 +77,7 @@ static bool physical_to_logical(bool state) {
  * @brief Прочитать текущую битовую маску с выходов
  */
 heater_mask_t output_read_bitmask(void) {
-    heater_level_t bitmask = 0;
+    heater_mask_t bitmask = 0;
     
     // ТЭН 1 (PB14) - бит 0
     bool gpio1_state = (gpio_read(PORT_HEATER_1, PIN_HEATER_1) == GPIO_PIN_SET);
