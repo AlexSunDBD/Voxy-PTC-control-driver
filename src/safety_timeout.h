@@ -63,7 +63,7 @@ void safety_timeout_init(void);
 bool safety_timeout_update(heater_level_t target_level);
 
 /**
- * @brief Проверить таймаут безопасност
+ * @brief Проверить таймаут безопасности
  * 
  * Проверяет, не превышен ли SAFETY_TIMEOUT при целевом состоянии 0.
  * Формирует ERR_SAFETY_TIMEOUT если по истечении SAFETY_TIMEOUT_MS
