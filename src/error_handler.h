@@ -1,4 +1,4 @@
-// error_handler.c
+// error_handler.h
 
 #ifndef ERROR_HANDLER_H
 #define ERROR_HANDLER_H
@@ -95,8 +95,6 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
 bool error_handler_timeout_expired(void);
 void error_handler_resume(void);
 bool error_handler_check_processing_timeout(uint32_t last_processing_time);
-void error_handler_update_window(void);
-bool error_handler_check_error_limit(void);
 void error_handler_enter_fatal(error_type_t fatal_error_type);
 const error_state_t* error_handler_get_state(void);
 const char* error_type_to_string(error_type_t error_type);
