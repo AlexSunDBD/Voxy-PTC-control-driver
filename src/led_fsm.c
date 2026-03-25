@@ -134,7 +134,6 @@ void led_fsm_set_mode(led_mode_t mode, uint8_t error_code, uint8_t output_state)
 
 void led_fsm_update(void) {
     uint32_t current_time = time_ms();
-    const error_state_t* es = error_handler_get_state();
     
     switch (led_fsm.step) {
         case 0:
@@ -219,7 +218,7 @@ void led_fsm_update(void) {
                     if (led_fsm.flash_count >= target_flashes) {
                         if (led_fsm.current_mode == LED_MODE_FATAL) {
 
-                            uint8_t count = fatal_visible_count(mask);
+                            uint8_t count = fatal_visible_count();
 
                             led_fsm.fatal_code_index++;
                             led_fsm.flash_count = 0;
