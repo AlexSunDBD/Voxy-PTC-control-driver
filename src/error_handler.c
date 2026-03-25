@@ -37,8 +37,7 @@ static bool is_error_counted_in_window(error_type_t error_type) {
             error_type == ERR_INTEGRITY ||
             error_type == ERR_SAFETY_TIMEOUT ||
             error_type == ERR_PROCESSING_TIMEOUT || 
-            error_type == ERR_VOLTAGE_NO_NOMINAL ||
-            error_type == ERR_SAFETY_SIGNAL_FAIL);
+            error_type == ERR_VOLTAGE_NO_NOMINAL);
 }
 
 static void enter_fatal_state(error_type_t error_type, uint32_t error_data)
@@ -167,6 +166,9 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
  
     if (fatal_active) {
         if (error_type == ERR_SAFETY_SIGNAL_FAIL) {
+            add_error_to_history(error_type, error_data, true);
+            error_ctx.total_errors++;
+            error_ctx.last_error_time = time_ms();
             error_ctx.window_error_mask |= (1 << error_type);
         }
         result.error_handled = true;
@@ -180,6 +182,12 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
     
     switch (error_type) {
         case ERR_SAFETY_SIGNAL_FAIL:
+            enter_fatal_state(error_type, error_data);
+            result.error_handled = true;
+            result.system_locked = true;
+            result.should_pause = false;
+            return result;
+                    
         case ERR_INSUFFICIENT_VALID:
         case ERR_INTEGRITY:
         case ERR_SAFETY_TIMEOUT:

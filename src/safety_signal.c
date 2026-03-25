@@ -167,18 +167,4 @@ const safety_signal_state_t* safety_signal_get_state(void) {
     return &safety_ctx;
 }
 
-void safety_signal_reset(void) {
-    // Сбрасываем состояние
-    safety_ctx.target_state = false;
-    safety_ctx.actual_state = false;
-    safety_ctx.last_confirmed = false;
-    safety_ctx.check_count = 0;
-    safety_ctx.error_count = 0;
-    safety_ctx.first_check_pending = false;
-    safety_ctx.clear_time_ms = 0;
-    safety_ctx.last_periodic_check_ms = 0;
-    
-    // Устанавливаем физическое состояние
-    set_safety_signal_physical(false);
-}
 

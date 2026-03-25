@@ -72,7 +72,7 @@ void safety_signal_init(void);
 safety_signal_result_t safety_signal_set(void);
 
 /**
- * @brief Снять сигнал НОРМА (PB15 = 0)
+ * @brief Снять сигнал НОРМА
  * @return Результат операции
  */
 safety_signal_result_t safety_signal_clear(void);
@@ -97,8 +97,6 @@ const safety_signal_state_t* safety_signal_get_state(void);
 /**
  * @brief Сбросить состояние модуля
  */
-void safety_signal_reset(void);
-
 safety_signal_error_t safety_signal_process(void);
 
 
