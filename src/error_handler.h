@@ -47,8 +47,9 @@ typedef enum {
 
 typedef struct {
     error_type_t type;              // Тип ошибки
-    uint32_t data;                 // Дополнительные данные
-    bool is_fatal;                 // Привела ли ошибка к FATAL
+    uint32_t timestamp_ms;          // Время фиксации ошибки
+    uint32_t data;                  // Дополнительные данные
+    bool is_fatal;                  // Привела ли ошибка к FATAL
 } error_record_t;
 
 typedef struct {

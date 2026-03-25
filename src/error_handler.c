@@ -167,17 +167,16 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
  
     if (fatal_active) {
         if (error_type == ERR_SAFETY_SIGNAL_FAIL) {
-            if ((error_ctx.window_error_mask & (1u << ERR_SAFETY_SIGNAL_FAIL)) == 0u) {
-                add_error_to_history(ERR_SAFETY_SIGNAL_FAIL, error_data, true);
-                error_ctx.window_error_mask |= (1u << ERR_SAFETY_SIGNAL_FAIL);
-            }
-            error_ctx.total_errors++;
+            enter_critical();
+            add_error_to_history(error_type, error_data, true); // отдельная запись во время FATAL
             error_ctx.last_error_time = time_ms();
+            exit_critical();
         }
         result.error_handled = true;
         result.system_locked = true;
         return result;
     }
+
 
     if (error_type == ERR_NONE) {
         return result;
