@@ -19,6 +19,7 @@ static error_state_t error_ctx;
 static void add_error_to_history(error_type_t type, uint32_t data, bool is_fatal) {
     error_record_t record = {
         .type = type,
+        .timestamp_ms = time_ms(),
         .data = data,
         .is_fatal = is_fatal
     };
@@ -59,7 +60,7 @@ static void enter_fatal_state(error_type_t error_type, uint32_t error_data, bool
 
     if (from_window_limit) {
         for (uint8_t code = ERR_INSUFFICIENT_VALID; code <= ERR_VOLTAGE_NO_NOMINAL; code++) {
-            if (error_ctx.window_error_mask & (1u << code)) {
+            if (error_ctx.window_error_mask & (1UL << (uint32_t)code)) {
                 add_error_to_history((error_type_t)code, 0, true);
             }
         }
@@ -95,9 +96,9 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
         
         if (is_error_counted_in_window(error_type)) {
 
-            error_ctx.window_error_mask |= (1 << error_type);
+        error_ctx.window_error_mask |= (1UL << (uint32_t)error_type);
 
-            uint32_t now = time_ms();
+        uint32_t now = time_ms();
 
             if (error_ctx.error_count_in_window == 0) {
                 // первая ошибка в окне
@@ -112,20 +113,19 @@ static error_result_t handle_normal_error(error_type_t error_type, uint32_t erro
                     // окно истекло — начинаем заново
                     error_ctx.error_window_start = now;
                     error_ctx.error_count_in_window = 1;
-                    error_ctx.window_error_mask = (1 << error_type);
+                    error_ctx.window_error_mask = (1UL << (uint32_t)error_type);
                 }
             }
         }
        
         if (error_ctx.error_count_in_window >= MAX_ERRORS_IN_WINDOW)
         {
-        
             enter_fatal_state(error_type, error_data, true);
-        
             result.system_locked = true;
             result.should_pause = false;
             return result;
         }
+        add_error_to_history(error_type, error_data, false);
         error_ctx.total_errors++;
         error_ctx.last_error_time = time_ms();
     } else {
@@ -167,11 +167,10 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
  
     if (fatal_active) {
         if (error_type == ERR_SAFETY_SIGNAL_FAIL) {
-            enter_critical();
             add_error_to_history(error_type, error_data, true);
             error_ctx.last_error_time = time_ms();
-            exit_critical();
         }
+        
         result.error_handled = true;
         result.system_locked = true;
         return result;
@@ -184,6 +183,9 @@ error_result_t error_handler_process(error_type_t error_type, uint32_t error_dat
     
     switch (error_type) {
         case ERR_SAFETY_SIGNAL_FAIL:
+            add_error_to_history(error_type, error_data, false);
+            error_ctx.total_errors++;
+            error_ctx.last_error_time = time_ms();
             enter_fatal_state(error_type, error_data, false);
             result.error_handled = true;
             result.system_locked = true;

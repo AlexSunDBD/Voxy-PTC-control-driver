@@ -70,9 +70,9 @@ typedef struct {
     uint32_t error_resets;         // Количество выходов из ERROR
     
     // Плавающее окно ошибок
-    uint8_t error_count_in_window; // Количество ошибок в текущем окне
-    uint8_t window_error_mask;     // битовая маска видов ошибок окна
-    
+    uint8_t  error_count_in_window; // Количество ошибок в текущем окне
+    uint32_t window_error_mask;     // битовая маска видов ошибок окна    
+
     // История ошибок
     error_record_t error_history[ERROR_HISTORY_SIZE];
     uint8_t error_history_index;
