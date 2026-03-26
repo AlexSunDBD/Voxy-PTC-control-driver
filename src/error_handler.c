@@ -43,6 +43,10 @@ static bool is_error_counted_in_window(error_type_t error_type) {
 
 static void enter_fatal_state(error_type_t error_type, uint32_t error_data, bool from_window_limit)
 {
+    if (error_ctx.fatal_state_active) {
+        return;
+    }
+
     error_ctx.fatal_state_active = true;
     error_ctx.outputs_locked = true;
     error_ctx.processing_locked = true;
@@ -50,7 +54,7 @@ static void enter_fatal_state(error_type_t error_type, uint32_t error_data, bool
     safety_signal_clear();
 
     bool shutdown_ok = emergency_shutdown();
-    (void)shutdown_ok; // можно позже усилить проверку
+    (void)shutdown_ok;
 
     // Очистка истории перед формированием "фатальной истории"
     error_ctx.error_history_index = 0;
