@@ -120,11 +120,15 @@ safety_signal_error_t safety_signal_process(void)
         {
             if (now - safety_ctx.clear_time_ms >= OUT_STABILIZATION_MS)
             {
-                safety_ctx.check_count++;
+                if (safety_ctx.check_count < UINT32_MAX) {
+                    safety_ctx.check_count++;
+                }
 
                 if (physical != false)
                 {
-                    safety_ctx.error_count++;
+                    if (safety_ctx.error_count < UINT32_MAX) {
+                        safety_ctx.error_count++;
+                    }
                     return SAFETY_SIGNAL_ERROR_LEVEL;
                 }
 
@@ -138,11 +142,15 @@ safety_signal_error_t safety_signal_process(void)
         {
             if (now - safety_ctx.last_periodic_check_ms >= SAFETY_CHECK_INTERVAL_MS)
             {
-                safety_ctx.check_count++;
+                if (safety_ctx.check_count < UINT32_MAX) {
+                    safety_ctx.check_count++;
+                }
 
                 if (physical != false)
                 {
-                    safety_ctx.error_count++;
+                    if (safety_ctx.error_count < UINT32_MAX) {
+                        safety_ctx.error_count++;
+                    }
                     return SAFETY_SIGNAL_ERROR_LEVEL;
                 }
 

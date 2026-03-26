@@ -95,10 +95,10 @@ bool safety_signal_read_physical_state(void);
 const safety_signal_state_t* safety_signal_get_state(void);
 
 /**
- * @brief Сбросить состояние модуля
+ * @brief Проверка сигнала безопасности PB15
+ * @return SAFETY_SIGNAL_ERROR_NONE или SAFETY_SIGNAL_ERROR_LEVEL
  */
 safety_signal_error_t safety_signal_process(void);
-
 
 #ifdef __cplusplus
 }

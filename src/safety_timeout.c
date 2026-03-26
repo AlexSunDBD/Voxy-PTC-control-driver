@@ -108,7 +108,9 @@ bool safety_timeout_check(void) {
     }
 
     safety_ctx.timeout_triggered = true;
-    safety_ctx.timeout_count++;
+    if (safety_ctx.timeout_count < UINT32_MAX) {
+        safety_ctx.timeout_count++;
+    }
 
     return true;
 }
