@@ -99,18 +99,17 @@ static void system_background_tasks(void) {
             // LED режим установится автоматически через led_fsm_auto_update
         }
             
+        // Автоматическое обновление LED режима
+        const error_state_t* error_state = error_handler_get_state();
+        uint8_t current_output_state = output_read_bitmask();
+        led_fsm_auto_update(error_state, current_output_state);
+
         // В FATAL режиме остальное НЕ выполняем
-        if (error_handler_get_state()->fatal_state_active) {
+        if (error_state->fatal_state_active) {
             last_background_run = current_time;
             return;
         }
-
-        // Автоматическое обновление LED режима
-        const error_state_t* error_state = error_handler_get_state();
-        uint8_t current_output_state = output_read_bitmask();        
-        
-        led_fsm_auto_update(error_state, current_output_state);
-        
+                
         last_background_run = current_time;
     }
 }
