@@ -314,10 +314,14 @@ int8_t voltage_monitoring_task(int8_t required) {
 
 void voltage_monitoring_increase_request(int8_t delta_required)
 {
+    if (delta_required <= 0) {
+        return;
+    }
+
     // Проверяем, что текущее ограничение не максимальное
     if (vm_ctx.load_limit < MAX_LOAD_STEP) {
         // Временная переменная для нового значения
-        int16_t new_limit = (int16_t)vm_ctx.load_limit + (int16_t)delta_required;;
+        int16_t new_limit = (int16_t)vm_ctx.load_limit + (int16_t)delta_required;
         
         // Ограничиваем сверху
         if (new_limit > MAX_LOAD_STEP) {new_limit = MAX_LOAD_STEP;}
@@ -333,6 +337,10 @@ void voltage_monitoring_increase_request(int8_t delta_required)
 
 void voltage_monitoring_decrease_request(int8_t delta_required)
 {
+    if (delta_required >= 0) {
+        return;
+    }
+
     // Проверяем, что текущее ограничение не нулевое
     if (vm_ctx.load_limit > 0) {
         // Временная переменная для нового значения

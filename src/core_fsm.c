@@ -110,7 +110,9 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // ====================================================
     if (final_is_zero)
     {
-        zero_confirm_counter++;
+        if (zero_confirm_counter < UINT8_MAX) {
+            zero_confirm_counter++;
+        }
 
         if (zero_confirm_counter < 2)
         {
