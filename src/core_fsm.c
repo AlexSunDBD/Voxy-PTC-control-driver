@@ -157,10 +157,7 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // ====================================================
     result.success = true;
     core_ctx.success_count++;
- //   result.actual_state = actual_now;     /* удалено как неиспользуемое */
-
- //   result.target_level = final_state;    /* удалено как неиспользуемое */
-
+ 
     uint32_t dt = time_ms() - t0;
     core_ctx.last_cycle_time_ms = dt;
     core_ctx.last_cycle_over_budget = (dt > PROCESSING_BUDGET_MS);

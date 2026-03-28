@@ -55,11 +55,16 @@ bool validate_single_measurement(const pwm_measurement_t* measurement) {
 
 validation_result_t validate_window(const measurement_window_t* window)
 {
+    uint8_t sample_count = window->count;
+    if (sample_count > PWM_BUFFER_SIZE) {
+        sample_count = PWM_BUFFER_SIZE;
+    }
+
     validation_result_t result = {
         .is_valid = false,
         .median_pulse_width = 0,
         .valid_samples_count = 0,
-        .total_samples_count = window->count,
+        .total_samples_count = sample_count,
     };
 
     // ====================================================
@@ -77,7 +82,7 @@ validation_result_t validate_window(const measurement_window_t* window)
     uint32_t valid_pulse[PWM_BUFFER_SIZE];
     uint8_t valid_count = 0;
 
-    for (uint8_t i = 0; i < window->count; i++) {
+    for (uint8_t i = 0; i < sample_count; i++) {
         if (validate_single_measurement(&window->samples[i])) {
             valid_pulse[valid_count]  = window->samples[i].pulse_width_us;
             valid_count++;

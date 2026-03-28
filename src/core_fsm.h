@@ -30,8 +30,6 @@ extern "C" {
  */
 typedef struct {
     bool success;
-//    heater_mask_t actual_state;     /* удалено как неиспользуемое */
-//    heater_level_t target_level;    /* удалено как неиспользуемое */
 } processing_result_t;
 
 /**
