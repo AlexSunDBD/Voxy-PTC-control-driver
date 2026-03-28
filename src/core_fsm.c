@@ -104,6 +104,8 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     /* 5. Преобразование в битовую маску */
     heater_mask_t target_bitmask = state_to_bitmask((heater_level_t)final_state);
     
+    core_ctx.target_level = final_state;
+    
 
     // ====================================================
     // 6. Двойное подтверждение нуля
@@ -126,8 +128,6 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     {
         zero_confirm_counter = 0;
     }
-    
-    core_ctx.target_level = final_state;
 
     // ====================================================
     // 7. Установка целевого состояния выходов
@@ -157,9 +157,9 @@ processing_result_t core_process_cycle(const measurement_window_t* window) {
     // ====================================================
     result.success = true;
     core_ctx.success_count++;
-    result.actual_state = actual_now;
+ //   result.actual_state = actual_now;     /* удалено как неиспользуемое */
 
-    result.target_level = final_state;
+ //   result.target_level = final_state;    /* удалено как неиспользуемое */
 
     uint32_t dt = time_ms() - t0;
     core_ctx.last_cycle_time_ms = dt;
